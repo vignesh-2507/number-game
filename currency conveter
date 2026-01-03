@@ -1,0 +1,62 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+import org.json.JSONObject;
+
+public class CurrencyConverter {
+
+    // Method to fetch exchange rate
+    public static double getExchangeRate(String base, String target) throws Exception {
+
+        String apiKey = "YOUR_API_KEY"; // Replace with your API key
+        String apiUrl = "https://v6.exchangerate-api.com/v6/" + apiKey +
+                        "/latest/" + base;
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+        StringBuilder response = new StringBuilder();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        JSONObject json = new JSONObject(response.toString());
+        return json.getJSONObject("conversion_rates").getDouble(target);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        try {
+            System.out.print("Enter base currency (e.g., USD, INR, EUR): ");
+            String baseCurrency = sc.next().toUpperCase();
+
+            System.out.print("Enter target currency (e.g., USD, INR, EUR): ");
+            String targetCurrency = sc.next().toUpperCase();
+
+            System.out.print("Enter amount to convert: ");
+            double amount = sc.nextDouble();
+
+            double rate = getExchangeRate(baseCurrency, targetCurrency);
+            double convertedAmount = amount * rate;
+
+            System.out.println("\n----- Conversion Result -----");
+            System.out.println("Exchange Rate: 1 " + baseCurrency + " = " + rate + " " + targetCurrency);
+            System.out.println("Converted Amount: " + convertedAmount + " " + targetCurrency);
+
+        } catch (Exception e) {
+            System.out.println("Error fetching exchange rate. Please check inputs or API key.");
+        }
+
+        sc.close();
+    }
+}
